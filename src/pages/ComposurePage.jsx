@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SiteHeader, SiteFooter, TabBar, SeasonSelector } from '../components/common';
 import ComposureLeaderboard from '../components/composure/ComposureLeaderboard';
-import ComposureTable from '../components/composure/ComposureTable';
 import ComposureNotebook from '../components/composure/ComposureNotebook';
 import { fetchAllComposureSeasons, buildPlayerMap } from '../services/composureService';
 
 const TABS = [
   { id: 'leaderboard', label: 'Leaderboard' },
-  { id: 'table',       label: 'Full Table'  },
   { id: 'methodology', label: 'Methodology' },
 ];
 
@@ -62,9 +60,6 @@ export default function ComposurePage() {
             <>
               {activeTab === 'leaderboard' && (
                 <ComposureLeaderboard playerMap={playerMap} activeSeason={activeSeason} />
-              )}
-              {activeTab === 'table' && (
-                <ComposureTable playerMap={playerMap} activeSeason={activeSeason} />
               )}
               {activeTab === 'methodology' && (
                 <ComposureNotebook />

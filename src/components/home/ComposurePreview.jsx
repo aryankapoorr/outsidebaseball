@@ -33,7 +33,9 @@ export default function ComposurePreview({ playerMap, activeSeason, onSeasonChan
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">Composure+</h2>
+            <Link to="/composure" className="hover:text-steel-400 transition-colors">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">Composure+</h2>
+            </Link>
             <p className="text-steel-400 text-sm sm:text-base max-w-lg">
               How well do pitchers maintain their approach after adversity?
               Ranked by Composure+, scaled to a league-average of 100.
