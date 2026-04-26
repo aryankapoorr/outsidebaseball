@@ -5,3 +5,5 @@ dist
 .DS_Store
 .firebase/
 package-lock.json
+aws
+awscliv2.zip
