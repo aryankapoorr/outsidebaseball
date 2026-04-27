@@ -24,6 +24,15 @@ export default function ComposurePage() {
     [allData]
   );
 
+  // Passed into ComposureLeaderboard so the tab bar sits in the left column,
+  // putting the table's top edge level with the Leaderboard / Methodology buttons.
+  const navSlot = (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-navy-900 flex flex-col">
       <SiteHeader />
@@ -43,27 +52,22 @@ export default function ComposurePage() {
       {/* Main content */}
       <section className="flex-1 pb-16 pt-6">
         <div className="container max-w-6xl">
-          {/* Controls row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-            <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
-            {activeTab !== 'methodology' && (
-              <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
-            )}
-          </div>
-
-          {/* Tab content */}
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="w-8 h-8 border-2 border-steel-500/30 border-t-steel-500 rounded-full animate-spin" />
             </div>
+          ) : activeTab === 'leaderboard' ? (
+            <ComposureLeaderboard
+              playerMap={playerMap}
+              activeSeason={activeSeason}
+              navSlot={navSlot}
+            />
           ) : (
             <>
-              {activeTab === 'leaderboard' && (
-                <ComposureLeaderboard playerMap={playerMap} activeSeason={activeSeason} />
-              )}
-              {activeTab === 'methodology' && (
-                <ComposureNotebook />
-              )}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+                <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+              </div>
+              <ComposureNotebook />
             </>
           )}
         </div>
