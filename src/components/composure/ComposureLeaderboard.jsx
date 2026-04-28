@@ -7,14 +7,14 @@ import PlayerDetailModal from './PlayerDetailModal';
 
 // ─── beeswarm constants ───────────────────────────────────────────────────────
 const W = 900;
-const H = 700;
+const H = 820;
 const PAD = { top: 28, right: 24, bottom: 44, left: 24 };
 const INNER_W = W - PAD.left - PAD.right;
 const INNER_H = H - PAD.top - PAD.bottom;
 const CENTER_Y = PAD.top + INNER_H / 2;
 const SCORE_MIN = 50;
-const SCORE_MAX = 175;
-const R = 4;
+const SCORE_MAX = 160;
+const R = 6;
 const DOT_PAD = 1;
 const STEP = 2 * R + DOT_PAD * 2;
 const MIN_DIST_SQ = STEP ** 2;
@@ -24,12 +24,12 @@ const BANDS = [
   { min: 70,  max: 90,  fill: '#fb923c' },
   { min: 90,  max: 110, fill: '#e5e7eb' },
   { min: 110, max: 130, fill: '#22d3ee' },
-  { min: 130, max: 175, fill: '#4ade80' },
+  { min: 130, max: 160, fill: '#4ade80' },
 ];
 
 
 const X_TICKS = [];
-for (let v = 50; v <= 175; v += 10) X_TICKS.push(v);
+for (let v = 50; v <= 160; v += 10) X_TICKS.push(v);
 
 const MIN_PITCHES_OPTIONS = [
   { label: 'All',   value: 0    },
@@ -125,7 +125,7 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
   return (
     <>
       {/* ── two-column: 75% chart / 25% table, fixed height so rows match chart ── */}
-      <div className="lg:flex lg:gap-6 lg:h-[75vh]">
+      <div className="lg:flex lg:gap-6 lg:h-[85vh]">
       {/* — left column: filter bar + chart + legend ——————————————————————————— */}
       <div className="min-w-0 lg:flex lg:flex-col" style={{ flex: '3 1 0%' }}>
 
@@ -180,16 +180,13 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
 
         {/* Chart — fills remaining left-column height on desktop */}
         <div
-          className="bg-navy-800 border border-navy-600 rounded-2xl p-2 overflow-x-auto lg:flex-1 lg:overflow-hidden"
+          className="bg-navy-800 border border-navy-600 rounded-2xl p-2 overflow-x-auto lg:flex-1"
           style={{ minHeight: 0 }}
         >
-          <div
-            className="relative min-w-[560px] lg:h-full lg:pb-0"
-            style={{ paddingBottom: `${(H / W) * 100}%` }}
-          >
+          <div className="min-w-[560px] aspect-[900/820] lg:aspect-auto lg:h-full">
             <svg
               viewBox={`0 0 ${W} ${H}`}
-              className="absolute inset-0 w-full h-full overflow-visible"
+              className="w-full h-full overflow-visible"
               onMouseLeave={() => setHovered(null)}
             >
               {BANDS.map(({ min, max, fill }) => (
