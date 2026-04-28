@@ -6,21 +6,20 @@ import PlayerDetailModal from './PlayerDetailModal';
 
 const MIN_PITCHES_OPTIONS = [
   { label: 'All',   value: 0    },
-  { label: '200+',  value: 200  },
-  { label: '500+',  value: 500  },
-  { label: '1000+', value: 1000 },
   { label: '2000+', value: 2000 },
+  { label: '1000+', value: 1000 },
+  { label: '500+',  value: 500  },
 ];
 
 export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
-  const [minPitches, setMinPitches] = useState(activeSeason === 'overall' ? 1000 : 500);
+  const [minPitches, setMinPitches] = useState(0);
   const [selected,   setSelected]   = useState(null);
 
   useEffect(() => {
-    setMinPitches(activeSeason === 'overall' ? 1000 : 500);
+    setMinPitches(0);
     setPage(0);
   }, [activeSeason]);
 
