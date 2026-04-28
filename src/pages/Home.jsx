@@ -21,15 +21,6 @@ export default function Home() {
   const navSlot = (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
-      <Link
-        to="/composure"
-        className="inline-flex items-center gap-1.5 px-3 py-2 bg-navy-800 border border-navy-600 hover:border-steel-500 text-steel-400 hover:text-white rounded-lg text-sm font-medium transition-all"
-      >
-        Full Rankings
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </Link>
     </div>
   );
 
@@ -42,13 +33,24 @@ export default function Home() {
         <div className="border-b border-navy-600 bg-navy-800/40">
           <div className="container max-w-6xl py-8">
             <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">Project</p>
-            <Link to="/composure" className="hover:opacity-80 transition-opacity">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Composure+</h1>
-            </Link>
-            <p className="text-steel-400 text-sm sm:text-base max-w-xl">
-              How well do pitchers maintain their approach after adversity?
-              Ranked by Composure+, scaled to a league-average of 100.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Composure+</h1>
+                <p className="text-steel-400 text-sm sm:text-base max-w-xl">
+                  How well do pitchers maintain their approach after adversity?
+                  Ranked by Composure+, scaled to a league-average of 100.
+                </p>
+              </div>
+              <Link
+                to="/composure"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-steel-500 hover:bg-steel-400 text-white rounded-xl text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0"
+              >
+                Explore Project
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
 
