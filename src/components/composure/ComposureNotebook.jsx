@@ -1,29 +1,24 @@
+import { Link } from 'react-router-dom';
 import { STAT_GROUPS } from '../../services/composureService';
+import NotebookViewer from './NotebookViewer';
 
 export default function ComposureNotebook() {
   return (
     <div>
-      {/* Notebook iframe */}
+      {/* Notebook viewer */}
       <div className="rounded-2xl border border-gray-700/50 overflow-hidden mb-8">
         <div className="bg-gray-800/60 px-5 py-3 border-b border-gray-700/50 flex items-center justify-between">
           <p className="text-sm font-medium text-gray-300">composure.ipynb</p>
-          <a
-            href="https://github.com/aryankapoorr/baseball/blob/main/composure/composure.ipynb"
+          <Link
+            to="/composure/notebook"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
           >
-            View on GitHub ↗
-          </a>
+            Open full notebook ↗
+          </Link>
         </div>
-        <iframe
-          src="/notebooks/composure.html"
-          sandbox="allow-scripts"
-          loading="lazy"
-          title="Composure+ Notebook"
-          className="w-full bg-gray-950"
-          style={{ minHeight: 640, border: 'none' }}
-        />
+        <NotebookViewer scrollable />
       </div>
 
       {/* Metric glossary */}

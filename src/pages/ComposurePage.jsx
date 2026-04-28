@@ -16,6 +16,7 @@ export default function ComposurePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [allData,              setAllData]              = useState(null);
+  const [seasons,              setSeasons]              = useState([]);
   const [loading,              setLoading]              = useState(true);
   const [activeTab,            setActiveTab]            = useState('overview');
   const [activeSeason,         setActiveSeason]         = useState('overall');
@@ -23,7 +24,7 @@ export default function ComposurePage() {
   const [pendingScroll,        setPendingScroll]        = useState(false);
 
   useEffect(() => {
-    fetchAllComposureSeasons().then((data) => { setAllData(data); setLoading(false); });
+    fetchAllComposureSeasons().then((data) => { setAllData(data); setSeasons(data.seasons ?? []); setLoading(false); });
   }, []);
 
   // Apply ?tab= query param on initial load
@@ -72,7 +73,7 @@ export default function ComposurePage() {
   const navSlot = (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <TabBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
-      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
+      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} seasons={seasons} />
     </div>
   );
 

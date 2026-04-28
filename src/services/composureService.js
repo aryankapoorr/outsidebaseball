@@ -1,6 +1,5 @@
 import Papa from 'papaparse';
 
-export const SEASONS = [2023, 2024, 2025];
 export const PAGE_SIZE = 25;
 
 export const STAT_GROUPS = [
@@ -55,9 +54,20 @@ export const METRIC_COLUMNS = [
   { key: 'ball_after_foul',           label: 'Ball% After Foul',      lowerIsBetter: true },
 ];
 
+const S3_BASE = 'https://outside-baseball-composure.s3.us-east-1.amazonaws.com';
+
+let cachedSeasons = null;
+
+export async function fetchAvailableSeasons() {
+  if (cachedSeasons) return cachedSeasons;
+  const res = await fetch(`${S3_BASE}/seasons.json`);
+  const { seasons } = await res.json();
+  cachedSeasons = [...seasons].sort((a, b) => a - b);
+  return cachedSeasons;
+}
+
 async function fetchSeason(yr) {
-  // Future: replace with API call → const res = await fetch(`/api/composure?season=${yr}`);
-  const res  = await fetch(`/data/composure_scores_${yr}.csv`);
+  const res = await fetch(`${S3_BASE}/data/composure_scores_${yr}.csv`);
   const text = await res.text();
   const { data } = Papa.parse(text, { header: true, skipEmptyLines: true, dynamicTyping: true });
   return data;
@@ -68,14 +78,16 @@ export async function fetchComposureData(season) {
 }
 
 export async function fetchAllComposureSeasons() {
-  const results = {};
-  await Promise.all(SEASONS.map(async (yr) => { results[yr] = await fetchSeason(yr); }));
+  const seasons = await fetchAvailableSeasons();
+  const results = { seasons };
+  await Promise.all(seasons.map(async (yr) => { results[yr] = await fetchSeason(yr); }));
   return results;
 }
 
 export function buildPlayerMap(allData) {
+  const seasons = allData.seasons ?? [];
   const map = new Map();
-  for (const yr of SEASONS) {
+  for (const yr of seasons) {
     for (const row of allData[yr] ?? []) {
       const name = row.pitcher_name;
       if (!name) continue;
@@ -84,7 +96,7 @@ export function buildPlayerMap(allData) {
     }
   }
   for (const [, entry] of map) {
-    const years = Object.keys(entry.byYear).map(Number).sort();
+    const years = Object.keys(entry.byYear).map(Number).sort((a, b) => a - b);
     let totalPitches = 0, weightedScore = 0;
     for (const yr of years) {
       totalPitches  += entry.byYear[yr].pitch_count;
