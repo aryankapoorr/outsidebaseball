@@ -1,18 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SiteHeader, SiteFooter, TabBar, SeasonSelector } from '../components/common';
 import ComposureLeaderboard from '../components/composure/ComposureLeaderboard';
+import ComposureCards from '../components/composure/ComposureCards';
 import ComposureNotebook from '../components/composure/ComposureNotebook';
 import { fetchAllComposureSeasons, buildPlayerMap } from '../services/composureService';
 
 const TABS = [
-  { id: 'leaderboard', label: 'Leaderboard' },
-  { id: 'methodology', label: 'Methodology' },
+  { id: 'overview',     label: 'Overview'     },
+  { id: 'leaderboard',  label: 'Leaderboard'  },
+  { id: 'methodology',  label: 'Methodology'  },
 ];
 
 export default function ComposurePage() {
   const [allData,      setAllData]      = useState(null);
   const [loading,      setLoading]      = useState(true);
-  const [activeTab,    setActiveTab]    = useState('leaderboard');
+  const [activeTab,    setActiveTab]    = useState('overview');
   const [activeSeason, setActiveSeason] = useState('overall');
 
   useEffect(() => {
@@ -24,9 +26,16 @@ export default function ComposurePage() {
     [allData]
   );
 
-  // Passed into ComposureLeaderboard so the tab bar sits in the left column,
-  // putting the table's top edge level with the Leaderboard / Methodology buttons.
-  const navSlot = (
+  // navSlot for Overview: tab bar + season selector sit inside the left column
+  const overviewNavSlot = (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
+    </div>
+  );
+
+  // navSlot for Leaderboard: tab bar + season selector above the card grid
+  const leaderboardNavSlot = (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
       <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
@@ -56,11 +65,17 @@ export default function ComposurePage() {
             <div className="flex items-center justify-center h-64">
               <div className="w-8 h-8 border-2 border-steel-500/30 border-t-steel-500 rounded-full animate-spin" />
             </div>
-          ) : activeTab === 'leaderboard' ? (
+          ) : activeTab === 'overview' ? (
             <ComposureLeaderboard
               playerMap={playerMap}
               activeSeason={activeSeason}
-              navSlot={navSlot}
+              navSlot={overviewNavSlot}
+            />
+          ) : activeTab === 'leaderboard' ? (
+            <ComposureCards
+              playerMap={playerMap}
+              activeSeason={activeSeason}
+              navSlot={leaderboardNavSlot}
             />
           ) : (
             <>
