@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { SiteHeader, SiteFooter } from '../components/common';
 import NotebookViewer from '../components/composure/NotebookViewer';
 
@@ -8,6 +9,12 @@ export default function ComposureNotebookPage() {
 
       <div className="border-b border-navy-600 bg-navy-800/40">
         <div className="container max-w-4xl py-8">
+          <Link
+            to="/composure"
+            className="text-xs text-steel-500 hover:text-steel-300 transition-colors mb-4 inline-flex items-center gap-1"
+          >
+            ← Back to Composure+
+          </Link>
           <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">Composure+</p>
           <h1 className="text-2xl font-bold text-white">composure.ipynb</h1>
         </div>
