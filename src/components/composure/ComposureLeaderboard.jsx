@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { formatPlayerName } from '../../utils/mlbLookup';
 import { scoreStroke, scoreColor } from '../../utils/scoreUtils';
-import { PAGE_SIZE } from '../../services/composureService';
-import { PlayerAvatar } from '../common';
+const PAGE_SIZE = 10;
+import { PlayerAvatar, PitchSlider } from '../common';
 import PlayerDetailModal from './PlayerDetailModal';
 
 // ─── beeswarm constants ───────────────────────────────────────────────────────
@@ -30,13 +30,6 @@ const BANDS = [
 
 const X_TICKS = [];
 for (let v = 50; v <= 160; v += 10) X_TICKS.push(v);
-
-const MIN_PITCHES_OPTIONS = [
-  { label: 'All',   value: 0    },
-  { label: '2000+', value: 2000 },
-  { label: '1000+', value: 1000 },
-  { label: '500+',  value: 500  },
-];
 
 function xOf(score) {
   return PAD.left + ((score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * INNER_W;
@@ -104,6 +97,17 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
     return allPlayers.filter(({ csvName }) => formatPlayerName(csvName).toLowerCase().includes(q));
   }, [allPlayers, search]);
 
+  const pitchMax = useMemo(() => {
+    let max = 0;
+    for (const [, entry] of playerMap) {
+      const p = activeSeason === 'overall'
+        ? entry.totalPitches
+        : entry.byYear[activeSeason]?.pitch_count ?? 0;
+      if (p > max) max = p;
+    }
+    return Math.ceil(max / 500) * 500;
+  }, [playerMap, activeSeason]);
+
   const dots = useMemo(() => computeBeeswarm(allPlayers), [allPlayers]);
 
   // Set of names matching the current search (used to highlight dots)
@@ -160,21 +164,8 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
             </svg>
             {sortAsc ? 'Low → High' : 'High → Low'}
           </button>
-          <div className="flex items-center gap-1 bg-navy-800/60 border border-navy-600 rounded-lg p-1">
-            <span className="text-xs text-steel-400 px-2 whitespace-nowrap">Min pitches</span>
-            {MIN_PITCHES_OPTIONS.map(({ label, value }) => (
-              <button
-                key={value}
-                onClick={() => handleMinPitch(value)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                  minPitches === value
-                    ? 'bg-navy-700 text-white border border-navy-500'
-                    : 'text-steel-400 hover:text-white'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="flex-1 min-w-[180px] bg-navy-800/60 border border-navy-600 rounded-lg px-3 py-2">
+            <PitchSlider value={minPitches} onChange={handleMinPitch} max={pitchMax} />
           </div>
         </div>
 
