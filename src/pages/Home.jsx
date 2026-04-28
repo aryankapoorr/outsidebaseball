@@ -6,11 +6,12 @@ import { fetchAllComposureSeasons, buildPlayerMap } from '../services/composureS
 
 export default function Home() {
   const [allData,      setAllData]      = useState(null);
+  const [seasons,      setSeasons]      = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [activeSeason, setActiveSeason] = useState('overall');
 
   useEffect(() => {
-    fetchAllComposureSeasons().then((data) => { setAllData(data); setLoading(false); });
+    fetchAllComposureSeasons().then((data) => { setAllData(data); setSeasons(data.seasons ?? []); setLoading(false); });
   }, []);
 
   const playerMap = useMemo(
@@ -34,7 +35,7 @@ export default function Home() {
           Methodology
         </Link>
       </div>
-      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
+      <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} seasons={seasons} />
     </div>
   );
 
