@@ -14,9 +14,8 @@ export default function PitchSlider({ value, onChange, max }) {
 
   return (
     <div className="flex items-center gap-3 min-w-0 w-full">
-      <span className="text-xs text-steel-400 whitespace-nowrap flex-shrink-0">
-        Min pitches: <span className="text-white font-medium">{label}</span>
-      </span>
+      <span className="text-xs text-steel-400 whitespace-nowrap flex-shrink-0">Min pitches:</span>
+      <span className="text-xs text-white font-medium whitespace-nowrap flex-shrink-0 w-16 text-right tabular-nums">{label}</span>
       <Slider.Root
         min={0}
         max={safeMax}

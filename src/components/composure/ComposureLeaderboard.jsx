@@ -131,7 +131,7 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
       {/* ── two-column: 75% chart / 25% table, fixed height so rows match chart ── */}
       <div className="lg:flex lg:gap-6 lg:h-[85vh]">
       {/* — left column: filter bar + chart + legend ——————————————————————————— */}
-      <div className="min-w-0 lg:flex lg:flex-col" style={{ flex: '3 1 0%' }}>
+      <div className="min-w-0 overflow-hidden lg:flex lg:flex-col" style={{ flex: '7 0 0' }}>
 
         {/* Nav slot: tab bar + season selector from parent */}
         {navSlot && (
@@ -236,10 +236,7 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
       </div>{/* end left column */}
 
       {/* — right column: table + pagination ————————————————————————————————— */}
-      <div
-        className="mt-6 lg:mt-0 lg:flex lg:flex-col"
-        style={{ flex: '1 1 0%' }}
-      >
+      <div className="mt-6 lg:mt-0 min-w-0 overflow-hidden lg:flex lg:flex-col" style={{ flex: '3 0 0' }}>
         {/* Table card — fixed height equal to chart column on desktop */}
         <div
           className="bg-navy-800 border border-navy-600 rounded-2xl overflow-hidden mb-4 lg:mb-0 lg:flex lg:flex-col"
