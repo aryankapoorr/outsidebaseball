@@ -1,27 +1,17 @@
 import * as Slider from '@radix-ui/react-slider';
 
-// Slider is inverted: rightmost = All (minPitches=0), dragging left raises the minimum.
-// sliderPos = max - minPitches, so the thumb sits at the right edge by default.
 export default function PitchSlider({ value, onChange, max }) {
   const safeMax = max || 5000;
-  const sliderPos = safeMax - value;
-
-  const handleChange = ([pos]) => {
-    onChange(safeMax - pos);
-  };
-
-  const label = value === 0 ? 'All' : value.toLocaleString() + '+';
 
   return (
     <div className="flex items-center gap-3 min-w-0 w-full">
-      <span className="text-xs text-steel-400 whitespace-nowrap flex-shrink-0">Min pitches:</span>
-      <span className="text-xs text-white font-medium whitespace-nowrap flex-shrink-0 w-16 text-right tabular-nums">{label}</span>
+      <span className="text-xs text-steel-400 whitespace-nowrap flex-shrink-0">Min pitches</span>
       <Slider.Root
         min={0}
         max={safeMax}
         step={100}
-        value={[sliderPos]}
-        onValueChange={handleChange}
+        value={[value]}
+        onValueChange={([v]) => onChange(v)}
         className="relative flex items-center select-none touch-none flex-1 h-5 min-w-0"
       >
         <Slider.Track className="bg-navy-600 relative grow rounded-full h-1.5">
@@ -32,8 +22,8 @@ export default function PitchSlider({ value, onChange, max }) {
           aria-label="Minimum pitches"
         />
       </Slider.Root>
-      <span className="text-xs text-steel-400 whitespace-nowrap flex-shrink-0">
-        {safeMax.toLocaleString()}
+      <span className="text-xs text-white font-medium whitespace-nowrap flex-shrink-0 w-10 text-center tabular-nums">
+        {value === 0 ? 'All' : `${value.toLocaleString()}+`}
       </span>
     </div>
   );
