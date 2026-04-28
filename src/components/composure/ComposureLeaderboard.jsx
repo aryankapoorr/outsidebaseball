@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatPlayerName } from '../../utils/mlbLookup';
 import { scoreStroke, scoreColor } from '../../utils/scoreUtils';
 import { PAGE_SIZE } from '../../services/composureService';
@@ -73,9 +73,14 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
-  const [minPitches, setMinPitches] = useState(0);
+  const [minPitches, setMinPitches] = useState(activeSeason === 'overall' ? 1000 : 500);
   const [hovered,    setHovered]    = useState(null);
   const [selected,   setSelected]   = useState(null);
+
+  useEffect(() => {
+    setMinPitches(activeSeason === 'overall' ? 1000 : 500);
+    setPage(0);
+  }, [activeSeason]);
 
   // All players for the selected season + min-pitches threshold (feeds both chart and cards)
   const allPlayers = useMemo(() => {

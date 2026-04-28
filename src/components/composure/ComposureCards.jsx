@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatPlayerName } from '../../utils/mlbLookup';
 import { PAGE_SIZE } from '../../services/composureService';
 import PlayerCard from './PlayerCard';
@@ -16,8 +16,13 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
-  const [minPitches, setMinPitches] = useState(0);
+  const [minPitches, setMinPitches] = useState(activeSeason === 'overall' ? 1000 : 500);
   const [selected,   setSelected]   = useState(null);
+
+  useEffect(() => {
+    setMinPitches(activeSeason === 'overall' ? 1000 : 500);
+    setPage(0);
+  }, [activeSeason]);
 
   const allPlayers = useMemo(() => {
     const rows = [];

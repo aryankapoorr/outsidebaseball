@@ -6,7 +6,7 @@ import { SEASONS } from '../../services/composureService';
 export default function SeasonSelector({ activeSeason, onChange }) {
   return (
     <div className="flex gap-1 bg-navy-800/60 rounded-xl p-1 border border-navy-600">
-      {['overall', ...SEASONS].map((s) => (
+      {['overall', ...[...SEASONS].reverse()].map((s) => (
         <button
           key={s}
           onClick={() => onChange(s)}

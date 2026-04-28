@@ -20,6 +20,20 @@ export default function Home() {
 
   const navSlot = (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div className="flex gap-1 bg-navy-800/60 rounded-xl p-1 border border-navy-600">
+        <Link
+          to="/composure?tab=leaderboard"
+          className="px-3 py-1.5 rounded-lg text-sm font-medium text-steel-400 hover:text-white hover:bg-navy-700/50 transition-all"
+        >
+          Leaderboard
+        </Link>
+        <Link
+          to="/composure?tab=methodology"
+          className="px-3 py-1.5 rounded-lg text-sm font-medium text-steel-400 hover:text-white hover:bg-navy-700/50 transition-all"
+        >
+          Methodology
+        </Link>
+      </div>
       <SeasonSelector activeSeason={activeSeason} onChange={setActiveSeason} />
     </div>
   );

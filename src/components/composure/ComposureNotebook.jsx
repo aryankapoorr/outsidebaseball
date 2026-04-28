@@ -28,16 +28,11 @@ export default function ComposureNotebook() {
 
       {/* Metric glossary */}
       <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-white mb-1">Component Metrics</h3>
-        <p className="text-gray-400 text-sm mb-5">
-          Composure+ is built from 14 conditional rate statistics. Each measures how a pitcher behaves
-          in the pitch or plate appearance immediately following a specific triggering event.
-        </p>
+        <h3 className="text-lg font-bold text-white mb-5">Component Metrics</h3>
         {STAT_GROUPS.map((group) => (
           <div key={group.label} className="mb-6 last:mb-0">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm font-semibold text-white">{group.label}</span>
-              {group.note && <span className="text-xs text-gray-500">· {group.note}</span>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {group.keys.map(([key, label]) => (
