@@ -1,21 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import { formatPlayerName } from '../../utils/mlbLookup';
-import { PAGE_SIZE } from '../../services/composureService';
+import { useProjectConfig } from '../../contexts/ProjectContext';
 import { PitchSlider } from '../common';
-import PlayerCard from './PlayerCard';
-import PlayerDetailModal from './PlayerDetailModal';
+import PlayerCard from '../shared/PlayerCard';
+import PlayerDetailModal from '../shared/PlayerDetailModal';
 
-export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
+export default function LeaderboardSection({ playerMap, activeSeason, navSlot }) {
+  const { dataSource, vizConfig, text } = useProjectConfig();
+  const { scoreColumn, pitchCountColumn } = dataSource;
+  const { leaderboardPageSize: pageSize } = vizConfig;
+
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
   const [minPitches, setMinPitches] = useState(0);
   const [selected,   setSelected]   = useState(null);
 
-  useEffect(() => {
-    setMinPitches(0);
-    setPage(0);
-  }, [activeSeason]);
+  useEffect(() => { setMinPitches(0); setPage(0); }, [activeSeason]);
 
   const allPlayers = useMemo(() => {
     const rows = [];
@@ -24,24 +25,24 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
         rows.push({ csvName, score: entry.overall, pitches: entry.totalPitches, entry });
       } else {
         const row = entry.byYear[activeSeason];
-        if (row) rows.push({ csvName, score: row.composure_plus, pitches: row.pitch_count, entry });
+        if (row) rows.push({ csvName, score: row[scoreColumn], pitches: row[pitchCountColumn], entry });
       }
     }
     return rows
       .filter(p => p.pitches >= minPitches)
       .sort((a, b) => sortAsc ? a.score - b.score : b.score - a.score);
-  }, [playerMap, activeSeason, minPitches, sortAsc]);
+  }, [playerMap, activeSeason, minPitches, sortAsc, scoreColumn, pitchCountColumn]);
 
   const pitchMax = useMemo(() => {
     let max = 0;
     for (const [, entry] of playerMap) {
       const p = activeSeason === 'overall'
         ? entry.totalPitches
-        : entry.byYear[activeSeason]?.pitch_count ?? 0;
+        : entry.byYear[activeSeason]?.[pitchCountColumn] ?? 0;
       if (p > max) max = p;
     }
     return Math.ceil(max / 500) * 500;
-  }, [playerMap, activeSeason]);
+  }, [playerMap, activeSeason, pitchCountColumn]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return allPlayers;
@@ -49,10 +50,10 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
     return allPlayers.filter(({ csvName }) => formatPlayerName(csvName).toLowerCase().includes(q));
   }, [allPlayers, search]);
 
-  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pageCount = Math.ceil(filtered.length / pageSize);
+  const pageItems = filtered.slice(page * pageSize, (page + 1) * pageSize);
 
-  const resetPage = () => setPage(0);
+  const resetPage        = () => setPage(0);
   const handleSearch     = (e) => { setSearch(e.target.value); resetPage(); };
   const handleMinPitch   = (v)  => { setMinPitches(v); resetPage(); };
   const handleSortToggle = ()   => { setSortAsc(v => !v); resetPage(); };
@@ -61,7 +62,6 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
     <>
       {navSlot && <div className="mb-6">{navSlot}</div>}
 
-      {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative w-full sm:w-56">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-steel-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +69,7 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
           </svg>
           <input
             type="text"
-            placeholder="Search pitcher…"
+            placeholder={text.searchPlaceholder}
             value={search}
             onChange={handleSearch}
             className="w-full pl-9 pr-4 py-2 bg-navy-800 border border-navy-600 rounded-lg text-sm text-white placeholder-steel-400/50 focus:outline-none focus:border-steel-500 focus:ring-1 focus:ring-steel-500/30 transition-all"
@@ -92,9 +92,8 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
         </div>
       </div>
 
-      {/* Card grid */}
       {filtered.length === 0 ? (
-        <div className="py-16 text-center text-steel-400 text-sm">No pitchers match these filters.</div>
+        <div className="py-16 text-center text-steel-400 text-sm">No {text.entityLabel}s match these filters.</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
           {pageItems.map(({ csvName, score, entry }, i) => (
@@ -102,44 +101,27 @@ export default function ComposureCards({ playerMap, activeSeason, navSlot }) {
               key={csvName}
               csvName={csvName}
               score={score}
-              rank={page * PAGE_SIZE + i + 1}
+              rank={page * pageSize + i + 1}
               onClick={() => setSelected({ csvName, entry })}
             />
           ))}
         </div>
       )}
 
-      {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-steel-400">
         <span>
           {filtered.length === 0
             ? 'No results'
-            : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+            : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
         </span>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setPage(p => p - 1)}
-            disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed"
-          >
-            ← Prev
-          </button>
+          <button onClick={() => setPage(p => p - 1)} disabled={page === 0} className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed">← Prev</button>
           <span className="text-white">{page + 1} / {Math.max(pageCount, 1)}</span>
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={page >= pageCount - 1}
-            className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
+          <button onClick={() => setPage(p => p + 1)} disabled={page >= pageCount - 1} className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed">Next →</button>
         </div>
       </div>
 
-      <PlayerDetailModal
-        csvName={selected?.csvName}
-        entry={selected?.entry}
-        onClose={() => setSelected(null)}
-      />
+      <PlayerDetailModal csvName={selected?.csvName} entry={selected?.entry} onClose={() => setSelected(null)} />
     </>
   );
 }

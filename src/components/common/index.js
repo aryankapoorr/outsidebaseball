@@ -5,4 +5,5 @@ export { default as SiteFooter       } from './SiteFooter.jsx';
 export { default as TabBar           } from './TabBar.jsx';
 export { default as SeasonSelector   } from './SeasonSelector.jsx';
 export { default as ScoreBadge       } from './ScoreBadge.jsx';
-export { default as PitchSlider      } from './PitchSlider.jsx';
+export { default as PitchSlider        } from './PitchSlider.jsx';
+export { default as ProjectPageHeader } from './ProjectPageHeader.jsx';

@@ -1,9 +1,11 @@
-import { STAT_GROUPS } from '../../services/composureService';
+import { useProjectConfig } from '../../contexts/ProjectContext';
 
 export default function StatGroupGrid({ yearRow }) {
+  const { statGroups } = useProjectConfig();
+
   return (
     <div>
-      {STAT_GROUPS.map((group) => (
+      {statGroups.map((group) => (
         <div key={group.label} className="mb-5 last:mb-0">
           <div className="flex items-center gap-2 mb-2.5">
             <span className="text-xs font-semibold text-steel-400 uppercase tracking-wider">

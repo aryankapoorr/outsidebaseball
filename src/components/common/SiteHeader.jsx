@@ -1,8 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
+import { PROJECTS } from '../../data/projects';
 
-const NAV_LINKS = [
-  { label: 'Composure+', to: '/composure' },
-];
+const NAV_LINKS = PROJECTS.map(p => ({ label: p.navLabel, to: `/${p.slug}` }));
 
 export default function SiteHeader() {
   const { pathname } = useLocation();

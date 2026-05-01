@@ -1,15 +1,21 @@
-export function scoreColor(val) {
-  if (val >= 130) return 'text-green-400';
-  if (val >= 110) return 'text-cyan-400';
-  if (val >= 90)  return 'text-gray-200';
-  if (val >= 70)  return 'text-orange-400';
-  return 'text-red-400';
+export const STANDARD_COLOR_BANDS = [
+  { min: 130, tailwind: 'text-green-400',  hex: '#4ade80' },
+  { min: 110, tailwind: 'text-cyan-400',   hex: '#22d3ee' },
+  { min: 90,  tailwind: 'text-gray-200',   hex: '#e5e7eb' },
+  { min: 70,  tailwind: 'text-orange-400', hex: '#fb923c' },
+  { min: 0,   tailwind: 'text-red-400',    hex: '#f87171' },
+];
+
+export function scoreColor(val, bands = STANDARD_COLOR_BANDS) {
+  for (const band of bands) {
+    if (val >= band.min) return band.tailwind;
+  }
+  return bands[bands.length - 1]?.tailwind ?? 'text-white';
 }
 
-export function scoreStroke(val) {
-  if (val >= 130) return '#4ade80';
-  if (val >= 110) return '#22d3ee';
-  if (val >= 90)  return '#e5e7eb';
-  if (val >= 70)  return '#fb923c';
-  return '#f87171';
+export function scoreStroke(val, bands = STANDARD_COLOR_BANDS) {
+  for (const band of bands) {
+    if (val >= band.min) return band.hex;
+  }
+  return bands[bands.length - 1]?.hex ?? '#ffffff';
 }

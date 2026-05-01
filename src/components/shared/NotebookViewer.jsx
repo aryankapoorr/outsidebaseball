@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-const NOTEBOOK_URL =
-  'https://outside-baseball-composure.s3.us-east-1.amazonaws.com/notebooks/composure.ipynb';
+import { useProjectConfig } from '../../contexts/ProjectContext';
 
 const md = {
   h1: ({ children }) => (
@@ -97,11 +95,12 @@ function NotebookCell({ cell }) {
 }
 
 export default function NotebookViewer({ scrollable = false }) {
+  const { dataSource } = useProjectConfig();
   const [cells, setCells] = useState(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(NOTEBOOK_URL)
+    fetch(dataSource.notebookUrl)
       .then((r) => r.json())
       .then((nb) => setCells(nb.cells))
       .catch(() => setError(true));

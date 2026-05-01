@@ -1,41 +1,23 @@
 import { useState, useEffect, useMemo } from 'react';
 import { formatPlayerName } from '../../utils/mlbLookup';
 import { scoreStroke, scoreColor } from '../../utils/scoreUtils';
-const PAGE_SIZE = 10;
+import { useProjectConfig } from '../../contexts/ProjectContext';
 import { PlayerAvatar, PitchSlider } from '../common';
-import PlayerDetailModal from './PlayerDetailModal';
+import PlayerDetailModal from '../shared/PlayerDetailModal';
 
-// ─── beeswarm constants ───────────────────────────────────────────────────────
-const W = 900;
-const H = 820;
+// ─── fixed canvas geometry (not project-specific) ────────────────────────────
+const W   = 900;
+const H   = 820;
 const PAD = { top: 28, right: 24, bottom: 44, left: 24 };
-const INNER_W = W - PAD.left - PAD.right;
-const INNER_H = H - PAD.top - PAD.bottom;
+const INNER_W  = W - PAD.left - PAD.right;
+const INNER_H  = H - PAD.top  - PAD.bottom;
 const CENTER_Y = PAD.top + INNER_H / 2;
-const SCORE_MIN = 50;
-const SCORE_MAX = 160;
-const R = 6;
-const DOT_PAD = 1;
-const STEP = 2 * R + DOT_PAD * 2;
+const R        = 6;
+const DOT_PAD  = 1;
+const STEP     = 2 * R + DOT_PAD * 2;
 const MIN_DIST_SQ = STEP ** 2;
 
-const BANDS = [
-  { min: 50,  max: 70,  fill: '#f87171' },
-  { min: 70,  max: 90,  fill: '#fb923c' },
-  { min: 90,  max: 110, fill: '#e5e7eb' },
-  { min: 110, max: 130, fill: '#22d3ee' },
-  { min: 130, max: 160, fill: '#4ade80' },
-];
-
-
-const X_TICKS = [];
-for (let v = 50; v <= 160; v += 10) X_TICKS.push(v);
-
-function xOf(score) {
-  return PAD.left + ((score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * INNER_W;
-}
-
-function computeBeeswarm(players) {
+function computeBeeswarm(players, xOf) {
   const sorted = [...players].sort((a, b) => a.score - b.score);
   const placed = [];
   for (const p of sorted) {
@@ -60,8 +42,36 @@ function computeBeeswarm(players) {
   return placed;
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
-export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot }) {
+export default function OverviewSection({ playerMap, activeSeason, navSlot }) {
+  const { dataSource, vizConfig, text } = useProjectConfig();
+  const { scoreColumn, pitchCountColumn } = dataSource;
+  const { scoreMin, scoreMax, leagueAverage, pageSize, colorBands } = vizConfig;
+
+  const xOf = useMemo(
+    () => (score) => PAD.left + ((score - scoreMin) / (scoreMax - scoreMin)) * INNER_W,
+    [scoreMin, scoreMax]
+  );
+
+  const xTicks = useMemo(() => {
+    const ticks = [];
+    for (let v = scoreMin; v <= scoreMax; v += 10) ticks.push(v);
+    return ticks;
+  }, [scoreMin, scoreMax]);
+
+  const chartBands = useMemo(() => {
+    const sorted = [...colorBands].sort((a, b) => a.min - b.min);
+    return sorted.map((band, i) => ({
+      min:  band.min === 0 ? scoreMin : band.min,
+      max:  i < sorted.length - 1 ? sorted[i + 1].min : scoreMax,
+      fill: band.hex,
+    }));
+  }, [colorBands, scoreMin, scoreMax]);
+
+  const bandLines = useMemo(
+    () => colorBands.map(b => b.min).filter(m => m > scoreMin && m < scoreMax),
+    [colorBands, scoreMin, scoreMax]
+  );
+
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
@@ -69,12 +79,8 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
   const [hovered,    setHovered]    = useState(null);
   const [selected,   setSelected]   = useState(null);
 
-  useEffect(() => {
-    setMinPitches(0);
-    setPage(0);
-  }, [activeSeason]);
+  useEffect(() => { setMinPitches(0); setPage(0); }, [activeSeason]);
 
-  // All players for the selected season + min-pitches threshold (feeds both chart and cards)
   const allPlayers = useMemo(() => {
     const rows = [];
     for (const [csvName, entry] of playerMap) {
@@ -82,15 +88,14 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
         rows.push({ csvName, score: entry.overall, pitches: entry.totalPitches, entry });
       } else {
         const row = entry.byYear[activeSeason];
-        if (row) rows.push({ csvName, score: row.composure_plus, pitches: row.pitch_count, entry });
+        if (row) rows.push({ csvName, score: row[scoreColumn], pitches: row[pitchCountColumn], entry });
       }
     }
     return rows
-      .filter(p => p.pitches >= minPitches && p.score >= SCORE_MIN && p.score <= SCORE_MAX)
+      .filter(p => p.pitches >= minPitches && p.score >= scoreMin && p.score <= scoreMax)
       .sort((a, b) => sortAsc ? a.score - b.score : b.score - a.score);
-  }, [playerMap, activeSeason, minPitches, sortAsc]);
+  }, [playerMap, activeSeason, minPitches, sortAsc, scoreColumn, pitchCountColumn, scoreMin, scoreMax]);
 
-  // Card grid: additionally filtered by search query
   const filtered = useMemo(() => {
     if (!search.trim()) return allPlayers;
     const q = search.toLowerCase();
@@ -102,43 +107,35 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
     for (const [, entry] of playerMap) {
       const p = activeSeason === 'overall'
         ? entry.totalPitches
-        : entry.byYear[activeSeason]?.pitch_count ?? 0;
+        : entry.byYear[activeSeason]?.[pitchCountColumn] ?? 0;
       if (p > max) max = p;
     }
     return Math.ceil(max / 500) * 500;
-  }, [playerMap, activeSeason]);
+  }, [playerMap, activeSeason, pitchCountColumn]);
 
-  const dots = useMemo(() => computeBeeswarm(allPlayers), [allPlayers]);
-
-  // Set of names matching the current search (used to highlight dots)
+  const dots        = useMemo(() => computeBeeswarm(allPlayers, xOf), [allPlayers, xOf]);
   const searchMatchSet = useMemo(() => {
     if (!search.trim()) return null;
     const q = search.toLowerCase();
     return new Set(allPlayers.filter(p => formatPlayerName(p.csvName).toLowerCase().includes(q)).map(p => p.csvName));
   }, [allPlayers, search]);
 
-  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const refX = xOf(100);
+  const refX      = useMemo(() => xOf(leagueAverage), [xOf, leagueAverage]);
+  const pageCount  = Math.ceil(filtered.length / pageSize);
+  const pageItems  = filtered.slice(page * pageSize, (page + 1) * pageSize);
 
-  const resetPage = () => setPage(0);
+  const resetPage        = () => setPage(0);
   const handleSearch     = (e) => { setSearch(e.target.value); resetPage(); };
   const handleMinPitch   = (v)  => { setMinPitches(v); resetPage(); };
   const handleSortToggle = ()   => { setSortAsc(v => !v); resetPage(); };
 
   return (
     <>
-      {/* ── two-column: 75% chart / 25% table, fixed height so rows match chart ── */}
       <div className="lg:flex lg:gap-6 lg:h-[85vh]">
-      {/* — left column: filter bar + chart + legend ——————————————————————————— */}
       <div className="min-w-0 overflow-hidden lg:flex lg:flex-col" style={{ flex: '7 0 0' }}>
 
-        {/* Nav slot: tab bar + season selector from parent */}
-        {navSlot && (
-          <div className="mb-4 lg:flex-shrink-0">{navSlot}</div>
-        )}
+        {navSlot && <div className="mb-4 lg:flex-shrink-0">{navSlot}</div>}
 
-        {/* Filter bar */}
         <div className="flex flex-wrap items-center gap-3 mb-4 lg:flex-shrink-0">
           <div className="relative w-full sm:w-56">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-steel-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +143,7 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
             </svg>
             <input
               type="text"
-              placeholder="Search pitcher…"
+              placeholder={text.searchPlaceholder}
               value={search}
               onChange={handleSearch}
               className="w-full pl-9 pr-4 py-2 bg-navy-800 border border-navy-600 rounded-lg text-sm text-white placeholder-steel-400/50 focus:outline-none focus:border-steel-500 focus:ring-1 focus:ring-steel-500/30 transition-all"
@@ -169,27 +166,19 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
           </div>
         </div>
 
-        {/* Chart — fills remaining left-column height on desktop */}
-        <div
-          className="bg-navy-800 border border-navy-600 rounded-2xl p-2 overflow-x-auto lg:flex-1"
-          style={{ minHeight: 0 }}
-        >
+        <div className="bg-navy-800 border border-navy-600 rounded-2xl p-2 overflow-x-auto lg:flex-1" style={{ minHeight: 0 }}>
           <div className="min-w-[560px] aspect-[900/820] lg:aspect-auto lg:h-full">
-            <svg
-              viewBox={`0 0 ${W} ${H}`}
-              className="w-full h-full overflow-visible"
-              onMouseLeave={() => setHovered(null)}
-            >
-              {BANDS.map(({ min, max, fill }) => (
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full overflow-visible" onMouseLeave={() => setHovered(null)}>
+              {chartBands.map(({ min, max, fill }) => (
                 <rect key={min} x={xOf(min)} y={PAD.top} width={xOf(max) - xOf(min)} height={INNER_H} fill={fill} fillOpacity={0.045} />
               ))}
-              {[70, 90, 110, 130].map(v => (
+              {bandLines.map(v => (
                 <line key={v} x1={xOf(v)} x2={xOf(v)} y1={PAD.top} y2={PAD.top + INNER_H} stroke="#243656" strokeWidth={1} />
               ))}
               <line x1={PAD.left} x2={W - PAD.right} y1={CENTER_Y} y2={CENTER_Y} stroke="#1e2f48" strokeWidth={1} />
               <line x1={refX} x2={refX} y1={PAD.top} y2={PAD.top + INNER_H} stroke="#4e82c0" strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="5 4" />
               <text x={refX} y={PAD.top - 8} fill="#7aaad4" fontSize={10} textAnchor="middle">avg</text>
-              {X_TICKS.map(v => (
+              {xTicks.map(v => (
                 <g key={v}>
                   <line x1={xOf(v)} x2={xOf(v)} y1={PAD.top + INNER_H} y2={PAD.top + INNER_H + 5} stroke="#243656" strokeWidth={1} />
                   <text x={xOf(v)} y={PAD.top + INNER_H + 18} fill="#4e82c0" fillOpacity={0.55} fontSize={10} textAnchor="middle">{v}</text>
@@ -204,9 +193,9 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
                     key={d.csvName}
                     cx={d.cx} cy={d.cy}
                     r={isHov ? R + 2 : R}
-                    fill={scoreStroke(d.score)}
+                    fill={scoreStroke(d.score, colorBands)}
                     fillOpacity={dimmed ? 0.15 : 0.9}
-                    stroke={isHov ? '#ffffff' : inSearch && searchMatchSet ? scoreStroke(d.score) : 'transparent'}
+                    stroke={isHov ? '#ffffff' : inSearch && searchMatchSet ? scoreStroke(d.score, colorBands) : 'transparent'}
                     strokeWidth={isHov ? 1.5 : 1}
                     style={{ cursor: 'pointer', transition: 'r 0.08s, fill-opacity 0.12s' }}
                     onMouseEnter={() => setHovered(d)}
@@ -224,7 +213,7 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
                   <g style={{ pointerEvents: 'none' }}>
                     <rect x={bX} y={bY} width={bW} height={bH} rx={bR} fill="#0f1923" stroke="#243656" strokeWidth={1} />
                     <text x={bX + bW / 2} y={bY + 16} fill="#e5e7eb" fontSize={11} textAnchor="middle" fontWeight="500">{name}</text>
-                    <text x={bX + bW / 2} y={bY + 34} fill={scoreStroke(hovered.score)} fontSize={15} fontWeight="bold" textAnchor="middle">{hovered.score.toFixed(1)}</text>
+                    <text x={bX + bW / 2} y={bY + 34} fill={scoreStroke(hovered.score, colorBands)} fontSize={15} fontWeight="bold" textAnchor="middle">{hovered.score.toFixed(1)}</text>
                     <text x={bX + bW / 2} y={bY + 48} fill="#4e82c0" fontSize={10} textAnchor="middle">{hovered.pitches.toLocaleString()} pitches</text>
                   </g>
                 );
@@ -233,25 +222,19 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
           </div>
         </div>
 
-      </div>{/* end left column */}
+      </div>
 
-      {/* — right column: table + pagination ————————————————————————————————— */}
       <div className="mt-6 lg:mt-0 min-w-0 overflow-hidden lg:flex lg:flex-col" style={{ flex: '3 0 0' }}>
-        {/* Table card — fixed height equal to chart column on desktop */}
-        <div
-          className="bg-navy-800 border border-navy-600 rounded-2xl overflow-hidden mb-4 lg:mb-0 lg:flex lg:flex-col"
-          style={{ flex: '1 1 0', minHeight: 0 }}
-        >
-          {/* Header */}
+        <div className="bg-navy-800 border border-navy-600 rounded-2xl overflow-hidden mb-4 lg:mb-0 lg:flex lg:flex-col" style={{ flex: '1 1 0', minHeight: 0 }}>
           <div className="flex items-center gap-3 px-3 py-2 border-b border-navy-600 text-xs font-semibold text-steel-400 uppercase tracking-wider flex-shrink-0">
             <span className="w-7 text-right flex-shrink-0">#</span>
             <span className="w-8 flex-shrink-0" />
-            <span className="flex-1">Pitcher</span>
-            <span className="w-14 text-right flex-shrink-0">C+</span>
+            <span className="flex-1">{text.entityLabel.charAt(0).toUpperCase() + text.entityLabel.slice(1)}</span>
+            <span className="w-14 text-right flex-shrink-0">{text.metricLabel}</span>
           </div>
 
           {pageItems.length === 0 ? (
-            <div className="py-12 text-center text-steel-400 text-sm">No pitchers match these filters.</div>
+            <div className="py-12 text-center text-steel-400 text-sm">No {text.entityLabel}s match these filters.</div>
           ) : (
             <div className="divide-y divide-navy-700/60" style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto' }}>
               {pageItems.map(({ csvName, score, entry }, i) => (
@@ -260,56 +243,33 @@ export default function ComposureLeaderboard({ playerMap, activeSeason, navSlot 
                   onClick={() => setSelected({ csvName, entry })}
                   className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-navy-700/40 transition-colors text-left group"
                 >
-                  <span className="w-7 text-right flex-shrink-0 text-xs font-mono text-steel-400">
-                    {page * PAGE_SIZE + i + 1}
-                  </span>
+                  <span className="w-7 text-right flex-shrink-0 text-xs font-mono text-steel-400">{page * pageSize + i + 1}</span>
                   <PlayerAvatar csvName={csvName} style={{ width: 34, height: 45 }} className="rounded flex-shrink-0" />
-                  <span className="flex-1 text-sm text-white font-medium truncate group-hover:text-steel-300 transition-colors">
-                    {formatPlayerName(csvName)}
-                  </span>
-                  <span className={`w-14 text-right flex-shrink-0 text-sm font-bold font-mono tabular-nums ${scoreColor(score)}`}>
-                    {score.toFixed(1)}
-                  </span>
+                  <span className="flex-1 text-sm text-white font-medium truncate group-hover:text-steel-300 transition-colors">{formatPlayerName(csvName)}</span>
+                  <span className={`w-14 text-right flex-shrink-0 text-sm font-bold font-mono tabular-nums ${scoreColor(score, colorBands)}`}>{score.toFixed(1)}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between text-sm text-steel-400 mt-3 flex-shrink-0">
           <span>
             {filtered.length === 0
               ? 'No results'
-              : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
           </span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage(p => p - 1)}
-              disabled={page === 0}
-              className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed"
-            >
-              ← Prev
-            </button>
+            <button onClick={() => setPage(p => p - 1)} disabled={page === 0} className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed">← Prev</button>
             <span className="text-white">{page + 1} / {Math.max(pageCount, 1)}</span>
-            <button
-              onClick={() => setPage(p => p + 1)}
-              disabled={page >= pageCount - 1}
-              className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed"
-            >
-              Next →
-            </button>
+            <button onClick={() => setPage(p => p + 1)} disabled={page >= pageCount - 1} className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed">Next →</button>
           </div>
         </div>
-      </div>{/* end right column */}
+      </div>
 
-      </div>{/* end two-column wrapper */}
+      </div>
 
-      <PlayerDetailModal
-        csvName={selected?.csvName}
-        entry={selected?.entry}
-        onClose={() => setSelected(null)}
-      />
+      <PlayerDetailModal csvName={selected?.csvName} entry={selected?.entry} onClose={() => setSelected(null)} />
     </>
   );
 }
