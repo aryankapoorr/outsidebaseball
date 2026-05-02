@@ -7,3 +7,4 @@ export { default as SeasonSelector   } from './SeasonSelector.jsx';
 export { default as ScoreBadge       } from './ScoreBadge.jsx';
 export { default as PitchSlider        } from './PitchSlider.jsx';
 export { default as ProjectPageHeader } from './ProjectPageHeader.jsx';
+export { default as AboutPanel        } from './AboutPanel.jsx';
