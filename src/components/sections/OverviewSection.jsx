@@ -230,7 +230,7 @@ export default function OverviewSection({ playerMap, activeSeason, navSlot }) {
             <span className="w-7 text-right flex-shrink-0">#</span>
             <span className="w-8 flex-shrink-0" />
             <span className="flex-1">{text.entityLabel.charAt(0).toUpperCase() + text.entityLabel.slice(1)}</span>
-            <span className="w-14 text-right flex-shrink-0">{text.metricLabel}</span>
+            <span className="w-14 text-right flex-shrink-0">{text.metricAbbrev ?? text.metricLabel}</span>
           </div>
 
           {pageItems.length === 0 ? (

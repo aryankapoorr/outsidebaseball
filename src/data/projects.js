@@ -17,6 +17,7 @@ export const PROJECTS = [
       tagline:               'How well do pitchers maintain their approach after adversity?',
       pageDescription:       'Ranked by Composure+, scaled to a league-average of 100.',
       metricLabel:           'Composure+',
+      metricAbbrev:          'C+',
       metricNote:            'League-average = 100',
       methodologyTitle:      'How Composure+ is built',
       methodologyBlurb:      'Composure+ measures how pitchers respond to adversity on a pitch-by-pitch basis. It combines 14 conditional rate statistics — each capturing behavior in the immediate pitch or plate appearance after a specific triggering event — then scales to a league-average of 100 so pitchers across seasons can be compared directly.',
