@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import Papa from 'papaparse';
 import { SITE } from '../../data/site';
 import { PROJECTS } from '../../data/projects';
@@ -24,72 +24,88 @@ function toDigits7(n) {
 // At that point the state settles: shown→incoming, flipping→false.
 // The flap remounts at 0° with the new digit — seamless transition.
 
-function DigitCard({ digit, flipMs = 90 }) {
+function DigitCard({ digit, flipMs = 50 }) {
+  const controls   = useAnimation();
   const shownRef   = useRef(digit);
   const pendingRef = useRef(null);
   const busyRef    = useRef(false);
-  const [shown,    setShown]    = useState(digit);
-  const [incoming, setIncoming] = useState(null);
-  const [flipping, setFlipping] = useState(false);
 
-  // Stored in a ref so recursive setTimeout calls always get the latest version
-  const doFlipRef = useRef(null);
-  doFlipRef.current = function doFlip() {
+  // `bottom` drives the bottom half and top-back when idle
+  // `flapDigit` drives what the flap card shows (old digit falling, new digit rising)
+  // `topBack`   drives what's visible behind the flap (new digit revealed as flap falls)
+  const [bottom,    setBottom]    = useState(digit);
+  const [flapDigit, setFlapDigit] = useState(digit);
+  const [topBack,   setTopBack]   = useState(digit);
+
+  // Stored in a ref so the async function always closes over the latest version
+  const runRef = useRef(null);
+  runRef.current = async function run() {
     const to = pendingRef.current;
     if (to === null || to === shownRef.current) { busyRef.current = false; return; }
     pendingRef.current = null;
     busyRef.current    = true;
-    setIncoming(to);
-    setFlipping(true);
-    setTimeout(() => {
-      shownRef.current = to;
-      setShown(to);
-      setFlipping(false);
-      setIncoming(null);
-      busyRef.current = false;
-      if (pendingRef.current !== null) doFlipRef.current();
-    }, flipMs);
+
+    // Reveal the incoming digit behind the flap immediately (it's hidden by the flap)
+    setTopBack(to);
+
+    // Phase 1 — fall: flap (old digit) rotates from 0° → -90°
+    await controls.start({
+      rotateX:    -90,
+      transition: { duration: flipMs / 1000, ease: [0.55, 0, 1, 0.45] },
+    });
+
+    // Midpoint — flap is edge-on (invisible); switch all content to new digit
+    shownRef.current = to;
+    setBottom(to);
+    setFlapDigit(to);
+
+    // Phase 2 — rise: flap (new digit) rotates from -90° → 0°
+    await controls.start({
+      rotateX:    0,
+      transition: { duration: flipMs / 1000, ease: [0, 0.55, 0.45, 1] },
+    });
+
+    busyRef.current = false;
+    if (pendingRef.current !== null) runRef.current();
   };
 
   useEffect(() => {
     if (digit === shownRef.current) return;
     pendingRef.current = digit;
-    if (!busyRef.current) doFlipRef.current();
+    if (!busyRef.current) runRef.current();
   }, [digit]);
 
-  const d = shown.toString();
-  const n = (incoming ?? shown).toString();
-
-  // Card dimensions — all geometry driven from these two values
   const W = '3.45rem';
   const H = '4.77rem';
 
   const numStyle = {
-    fontSize:   '2.65rem',
-    fontWeight: 700,
-    color:      '#fff',
-    lineHeight: 1,
+    fontSize:           '2.65rem',
+    fontWeight:         700,
+    color:              '#fff',
+    lineHeight:         1,
     fontVariantNumeric: 'tabular-nums',
   };
+  const centerIn = (anchor) => ({
+    position: 'absolute', [anchor]: 0, left: 0, right: 0,
+    height: '200%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+  });
 
   return (
     <div style={{ position: 'relative', width: W, height: H, perspective: '250px', userSelect: 'none' }}>
 
-      {/* 1. Top-back: static, behind flap; shows incoming while flipping */}
+      {/* Top-back: new digit waiting behind the flap */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', overflow: 'hidden', background: '#162236', borderRadius: '4px 4px 0 0' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '200%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={numStyle}>{flipping ? n : d}</span>
+        <div style={centerIn('top')}>
+          <span style={numStyle}>{topBack}</span>
         </div>
       </div>
 
-      {/* 2. Flap: top half of current digit, falls to -90° revealing top-back */}
+      {/* Flap: single persistent element, animated by controls — no remounting */}
       <motion.div
-        key={`${d}-${String(flipping)}`}
+        animate={controls}
         style={{
           position:           'absolute',
-          top:                0,
-          left:               0,
-          right:              0,
+          top: 0, left: 0, right: 0,
           height:             '50%',
           overflow:           'hidden',
           background:         '#1e2f46',
@@ -98,31 +114,21 @@ function DigitCard({ digit, flipMs = 90 }) {
           backfaceVisibility: 'hidden',
           zIndex:             10,
         }}
-        initial={{ rotateX: 0 }}
-        animate={{ rotateX: flipping ? -90 : 0 }}
-        transition={{ duration: flipMs / 1000, ease: [0.55, 0, 1, 0.45] }}
       >
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '200%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={numStyle}>{d}</span>
+        <div style={centerIn('top')}>
+          <span style={numStyle}>{flapDigit}</span>
         </div>
       </motion.div>
 
-      {/* 3. Bottom: static, always shows current `shown` */}
+      {/* Bottom: snaps to new digit at the midpoint */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', overflow: 'hidden', background: '#0e1a28', borderRadius: '0 0 4px 4px' }}>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={numStyle}>{d}</span>
+        <div style={centerIn('bottom')}>
+          <span style={numStyle}>{bottom}</span>
         </div>
       </div>
 
       {/* Center seam */}
-      <div style={{
-        position:   'absolute',
-        inset:      '0 0 auto',
-        top:        'calc(50% - 1px)',
-        height:     '2px',
-        background: 'rgba(0,0,0,0.85)',
-        zIndex:     20,
-      }} />
+      <div style={{ position: 'absolute', top: 'calc(50% - 1px)', left: 0, right: 0, height: '2px', background: 'rgba(0,0,0,0.85)', zIndex: 20 }} />
     </div>
   );
 }
@@ -159,15 +165,15 @@ function FlipCounter({ value, label, suffix = '' }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'stretch', gap: '3px' }}>
-        <DigitCard digit={d0} flipMs={95} />
+        <DigitCard digit={d0} flipMs={54} />
         <span style={commaStyle}>,</span>
-        <DigitCard digit={d1} flipMs={88} />
-        <DigitCard digit={d2} flipMs={80} />
-        <DigitCard digit={d3} flipMs={72} />
+        <DigitCard digit={d1} flipMs={50} />
+        <DigitCard digit={d2} flipMs={46} />
+        <DigitCard digit={d3} flipMs={42} />
         <span style={commaStyle}>,</span>
-        <DigitCard digit={d4} flipMs={64} />
-        <DigitCard digit={d5} flipMs={57} />
-        <DigitCard digit={d6} flipMs={50} />
+        <DigitCard digit={d4} flipMs={38} />
+        <DigitCard digit={d5} flipMs={34} />
+        <DigitCard digit={d6} flipMs={30} />
         {suffix && (
           <span style={{
             color:      '#ffffff',
@@ -216,10 +222,6 @@ const itemVariants = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] } },
 };
 
-function scrollToProjects() {
-  document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
-}
-
 // ─── Hero ─────────────────────────────────────────────────────────────────
 
 export default function HeroSection() {
@@ -261,7 +263,7 @@ export default function HeroSection() {
         // fail silently
       }
 
-      if (!cancelled) setHeroData({ totalPlayers: playerCount, totalPitchEvents: pitchEvents });
+      if (!cancelled) setHeroData({ totalPlayers: Math.floor(playerCount / 50) * 50, totalPitchEvents: pitchEvents });
     }
 
     load();
@@ -301,21 +303,6 @@ export default function HeroSection() {
               {SITE.about[0].text}
             </motion.p>
 
-            <motion.button
-              variants={itemVariants}
-              onClick={scrollToProjects}
-              className="mt-6 inline-flex flex-col items-center gap-1 text-[10px] font-semibold tracking-[0.2em] uppercase text-steel-500 hover:text-steel-400 transition-colors cursor-pointer"
-            >
-              <span>Explore</span>
-              <motion.svg
-                width="16" height="16" viewBox="0 0 16 16" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                animate={{ y: [0, 5, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-              >
-                <path d="M8 3v10M3 9l5 5 5-5" />
-              </motion.svg>
-            </motion.button>
           </motion.div>
 
           {/* Data column */}
@@ -330,7 +317,6 @@ export default function HeroSection() {
                 <FlipCounter
                   value={heroData.totalPitchEvents}
                   label="Pitch Events Analyzed"
-                  suffix="+"
                 />
                 <DataStatement totalPlayers={heroData.totalPlayers} />
               </motion.div>
