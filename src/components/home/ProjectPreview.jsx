@@ -48,7 +48,7 @@ export default function ProjectPreview({ project }) {
 
   return (
     <ProjectProvider config={project}>
-      <div className="pb-16">
+      <div className="pb-6">
         <div className="border-b border-navy-600 bg-navy-800/40">
           <div className="container max-w-6xl py-8">
             <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">Metric</p>

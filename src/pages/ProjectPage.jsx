@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SiteHeader, SiteFooter, TabBar, SeasonSelector, ProjectPageHeader } from '../components/common';
 import { ProjectProvider } from '../contexts/ProjectContext';
@@ -12,11 +12,14 @@ export default function ProjectPage({ project }) {
   const [seasons,      setSeasons]      = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [activeSeason, setActiveSeason] = useState('overall');
-  const [pendingScroll, setPendingScroll] = useState(false);
 
   // First non-scrollTarget section is the default tab
   const defaultTab = project.sections.find(s => !s.scrollTarget)?.id ?? project.sections[0].id;
   const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Ref so we can read the intended scroll target inside effects without
+  // triggering extra re-renders
+  const scrollTargetRef = useRef(null);
 
   useEffect(() => {
     service.fetchAllSeasons().then((data) => {
@@ -26,25 +29,25 @@ export default function ProjectPage({ project }) {
     });
   }, [service]);
 
-  // Honour ?tab= query param on initial load
+  // Read ?tab= once on mount; decide tab-switch vs. scroll-target
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (!tab) return;
     const section = project.sections.find(s => s.id === tab);
-    if (section?.scrollTarget) setPendingScroll(true);
+    if (section?.scrollTarget) scrollTargetRef.current = tab;
     else if (section) setActiveTab(tab);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Execute pending scroll once data is ready
+  // Once data is loaded AND a scroll target is queued, scroll after the next
+  // layout pass (rAF fires after the browser has committed and painted the sections)
   useEffect(() => {
-    if (!loading && pendingScroll) {
-      const tab = searchParams.get('tab');
-      setTimeout(() => {
-        document.getElementById(`${tab}-section`)?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-      setPendingScroll(false);
-    }
-  }, [loading, pendingScroll]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (loading || !scrollTargetRef.current) return;
+    const target = scrollTargetRef.current;
+    scrollTargetRef.current = null;
+    requestAnimationFrame(() => {
+      document.getElementById(`${target}-section`)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  }, [loading]);
 
   const playerMap = useMemo(
     () => (allData ? service.buildPlayerMap(allData) : new Map()),
@@ -56,7 +59,10 @@ export default function ProjectPage({ project }) {
     if (section?.scrollTarget) {
       setActiveTab(defaultTab);
       setSearchParams({ tab: id }, { replace: true });
-      document.getElementById(`${id}-section`)?.scrollIntoView({ behavior: 'smooth' });
+      // rAF fires after React commits the re-render that makes the section visible
+      requestAnimationFrame(() => {
+        document.getElementById(`${id}-section`)?.scrollIntoView({ behavior: 'smooth' });
+      });
     } else {
       setActiveTab(id);
       setSearchParams(id === defaultTab ? {} : { tab: id }, { replace: true });
