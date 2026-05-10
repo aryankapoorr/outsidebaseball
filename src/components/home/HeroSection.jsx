@@ -206,7 +206,7 @@ function DataStatement({ totalPlayers }) {
     >
       Context-driven metrics for{' '}
       <span className="text-white font-medium not-italic">{totalPlayers}+</span>{' '}
-      qualified MLB pitchers
+      qualified MLB players
     </motion.p>
   );
 }
