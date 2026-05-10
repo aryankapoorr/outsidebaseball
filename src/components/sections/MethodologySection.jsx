@@ -29,7 +29,10 @@ export default function MethodologySection() {
 
       {/* Metric glossary */}
       <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-white mb-5">{text.componentMetricsTitle}</h3>
+        <h3 className="text-lg font-bold text-white mb-2">{text.componentMetricsTitle}</h3>
+        {text.componentMetricsDescription && (
+          <p className="text-steel-400 text-xs mb-5 max-w-2xl">{text.componentMetricsDescription}</p>
+        )}
         {statGroups.map((group) => (
           <div key={group.label} className="mb-6 last:mb-0">
             <div className="flex items-center gap-2 mb-3">

@@ -9,3 +9,4 @@ export { default as PitchSlider        } from './PitchSlider.jsx';
 export { default as ProjectPageHeader } from './ProjectPageHeader.jsx';
 export { default as AboutPanel        } from './AboutPanel.jsx';
 export { default as PageMinimap       } from './PageMinimap.jsx';
+export { default as Tooltip           } from './Tooltip.jsx';

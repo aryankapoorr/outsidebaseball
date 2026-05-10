@@ -25,7 +25,8 @@ export const PROJECTS = [
       notebookPath:          '/composure/notebook',
       searchPlaceholder:     'Search pitcher…',
       entityLabel:           'pitcher',
-      componentMetricsTitle: 'Component Metrics',
+      componentMetricsTitle:       'Component Metrics',
+      componentMetricsDescription: 'Metrics are grouped into two sub-scores — ADV (Adversity Composure+) captures how the pitcher responds after adverse outcomes; MOM (Momentum Composure+) captures how sharp they stay after positive situations.',
     },
 
     // ── Data sources ──────────────────────────────────────────────────────────
@@ -37,6 +38,10 @@ export const PROJECTS = [
       playerNameColumn:  'pitcher_name',
       scoreColumn:       'composure_plus',
       pitchCountColumn:  'pitch_count',
+      subScoreColumns: [
+        { key: 'adversity_composure_plus', label: 'ADV', name: 'Adversity Composure+' },
+        { key: 'momentum_composure_plus',  label: 'MOM', name: 'Momentum Composure+' },
+      ],
     },
 
     // ── Visualization / scoring config ────────────────────────────────────────
