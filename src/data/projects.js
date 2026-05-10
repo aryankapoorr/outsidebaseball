@@ -14,13 +14,13 @@ export const PROJECTS = [
 
     // ── All user-visible text ─────────────────────────────────────────────────
     text: {
-      tagline:               'How well do pitchers maintain their approach after adversity?',
+      tagline:               'How well do pitchers handle adversity?',
       pageDescription:       'Ranked by Composure+, scaled to a league-average of 100.',
       metricLabel:           'Composure+',
       metricAbbrev:          'C+',
       metricNote:            'League-average = 100',
       methodologyTitle:      'How Composure+ is built',
-      methodologyBlurb:      'Composure+ measures how pitchers respond to adversity on a pitch-by-pitch basis. It combines 14 conditional rate statistics — each capturing behavior in the immediate pitch or plate appearance after a specific triggering event — then scales to a league-average of 100 so pitchers across seasons can be compared directly.',
+      methodologyBlurb:      'Composure+ aims to measure how pitchers respond to different pitch situations — both positive & negative. It combines 14 conditional rate statistics — each capturing behavior in the immediate pitch or plate appearance after a specific triggering event — creating a \'positive\' and \'negative\' composure score. Those are then combined and normalized to create the final scaled Composure+ value.',
       notebookFilename:      'composure.ipynb',
       notebookPath:          '/composure/notebook',
       searchPlaceholder:     'Search pitcher…',
