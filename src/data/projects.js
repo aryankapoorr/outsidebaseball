@@ -42,7 +42,7 @@ export const PROJECTS = [
     // ── Visualization / scoring config ────────────────────────────────────────
     vizConfig: {
       scoreMin:        50,
-      scoreMax:        160,
+      scoreMax:        150,
       leagueAverage:   100,
       pageSize:            10,
       leaderboardPageSize: 30,
