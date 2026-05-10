@@ -124,7 +124,7 @@ function NotebookCell({ cell, sectionId }) {
   if (cell.cell_type === 'markdown') {
     if (!source.trim()) return null;
     return (
-      <div id={sectionId} className="mb-2">
+      <div id={sectionId} className={`mb-2 ${sectionId ? 'scroll-mt-20' : ''}`}>
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={md}>
           {source}
         </ReactMarkdown>
@@ -134,7 +134,7 @@ function NotebookCell({ cell, sectionId }) {
 
   if (cell.cell_type === 'code') {
     return (
-      <div id={sectionId}>
+      <div id={sectionId} className={sectionId ? 'scroll-mt-20' : ''}>
         {source.trim() && (
           <pre className="bg-gray-900/80 border border-gray-700/50 rounded-lg p-4 mb-2 overflow-x-auto text-xs text-gray-300 font-mono leading-relaxed">
             <code>{source}</code>
