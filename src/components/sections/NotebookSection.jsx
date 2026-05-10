@@ -9,7 +9,7 @@ export default function NotebookSection() {
       <div className="bg-gray-800/60 px-5 py-3 border-b border-gray-700/50">
         <p className="text-sm font-medium text-gray-300">{text.notebookFilename}</p>
       </div>
-      <NotebookViewer />
+      <NotebookViewer floatingNav />
     </div>
   );
 }
