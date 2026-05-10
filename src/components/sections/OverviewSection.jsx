@@ -45,7 +45,49 @@ function computeBeeswarm(players, xOf) {
 export default function OverviewSection({ playerMap, activeSeason, navSlot }) {
   const { dataSource, vizConfig, text } = useProjectConfig();
   const { scoreColumn, pitchCountColumn } = dataSource;
-  const { scoreMin, scoreMax, leagueAverage, pageSize, colorBands } = vizConfig;
+  const { leagueAverage, pageSize, colorBands } = vizConfig;
+
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  const effectivePageSize = isMobile ? Math.ceil(pageSize / 2) : pageSize;
+
+  const [search,     setSearch]     = useState('');
+  const [page,       setPage]       = useState(0);
+  const [sortAsc,    setSortAsc]    = useState(false);
+  const [minPitches, setMinPitches] = useState(0);
+  const [hovered,    setHovered]    = useState(null);
+  const [selected,   setSelected]   = useState(null);
+
+  useEffect(() => { setMinPitches(0); setPage(0); }, [activeSeason]);
+  useEffect(() => { setPage(0); }, [effectivePageSize]);
+
+  const rawPlayers = useMemo(() => {
+    const rows = [];
+    for (const [csvName, entry] of playerMap) {
+      if (activeSeason === 'overall') {
+        rows.push({ csvName, score: entry.overall, pitches: entry.totalPitches, entry });
+      } else {
+        const row = entry.byYear[activeSeason];
+        if (row) rows.push({ csvName, score: row[scoreColumn], pitches: row[pitchCountColumn], entry });
+      }
+    }
+    return rows;
+  }, [playerMap, activeSeason, scoreColumn, pitchCountColumn]);
+
+  const scoreMin = useMemo(() => {
+    if (rawPlayers.length === 0) return 0;
+    return Math.floor(Math.min(...rawPlayers.map(p => p.score)) / 10) * 10;
+  }, [rawPlayers]);
+
+  const scoreMax = useMemo(() => {
+    if (rawPlayers.length === 0) return 200;
+    return Math.ceil(Math.max(...rawPlayers.map(p => p.score)) / 10) * 10;
+  }, [rawPlayers]);
 
   const xOf = useMemo(
     () => (score) => PAD.left + ((score - scoreMin) / (scoreMax - scoreMin)) * INNER_W,
@@ -72,39 +114,11 @@ export default function OverviewSection({ playerMap, activeSeason, navSlot }) {
     [colorBands, scoreMin, scoreMax]
   );
 
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    const handler = (e) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  const effectivePageSize = isMobile ? Math.ceil(pageSize / 2) : pageSize;
-
-  const [search,     setSearch]     = useState('');
-  const [page,       setPage]       = useState(0);
-  const [sortAsc,    setSortAsc]    = useState(false);
-  const [minPitches, setMinPitches] = useState(0);
-  const [hovered,    setHovered]    = useState(null);
-  const [selected,   setSelected]   = useState(null);
-
-  useEffect(() => { setMinPitches(0); setPage(0); }, [activeSeason]);
-  useEffect(() => { setPage(0); }, [effectivePageSize]);
-
   const allPlayers = useMemo(() => {
-    const rows = [];
-    for (const [csvName, entry] of playerMap) {
-      if (activeSeason === 'overall') {
-        rows.push({ csvName, score: entry.overall, pitches: entry.totalPitches, entry });
-      } else {
-        const row = entry.byYear[activeSeason];
-        if (row) rows.push({ csvName, score: row[scoreColumn], pitches: row[pitchCountColumn], entry });
-      }
-    }
-    return rows
-      .filter(p => p.pitches >= minPitches && p.score >= scoreMin && p.score <= scoreMax)
+    return rawPlayers
+      .filter(p => p.pitches >= minPitches)
       .sort((a, b) => sortAsc ? a.score - b.score : b.score - a.score);
-  }, [playerMap, activeSeason, minPitches, sortAsc, scoreColumn, pitchCountColumn, scoreMin, scoreMax]);
+  }, [rawPlayers, minPitches, sortAsc]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return allPlayers;
