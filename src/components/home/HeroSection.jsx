@@ -205,7 +205,7 @@ function DataStatement({ totalPlayers }) {
       transition={{ delay: 0.8, duration: 0.6 }}
     >
       Context-driven metrics for{' '}
-      <span className="text-ob-red-light font-medium not-italic">{totalPlayers}+</span>{' '}
+      <span className="text-white font-medium not-italic">{totalPlayers}+</span>{' '}
       qualified MLB pitchers
     </motion.p>
   );

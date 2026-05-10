@@ -50,7 +50,7 @@ export default function AboutPanel({ open, onClose }) {
 
             <div className="p-6 pt-5">
               {/* Site identity */}
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-navy-600">
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-ob-red/30">
                 <img src="/outsidebaseball.png" alt={SITE.name} className="h-10 w-10 rounded-full flex-shrink-0" />
                 <div>
                   <h2 className="text-base font-bold text-white">{SITE.name}</h2>
@@ -59,7 +59,7 @@ export default function AboutPanel({ open, onClose }) {
               </div>
 
               {/* About */}
-              <div className="mb-6 pb-6 border-b border-navy-600">
+              <div className="mb-6 pb-6 border-b border-ob-red/30">
                 <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-3">About</p>
                 {SITE.about.map((para, i) => (
                   <p key={i} className={`text-sm text-steel-300 leading-relaxed ${i > 0 ? 'mt-3' : ''} ${para.italic ? 'italic' : ''}`}>

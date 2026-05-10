@@ -19,7 +19,7 @@ export default function MethodologySection() {
             to={text.notebookPath}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="text-xs text-ob-red-light hover:text-ob-red transition-colors"
           >
             Open full notebook ↗
           </Link>
