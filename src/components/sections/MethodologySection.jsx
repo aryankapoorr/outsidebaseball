@@ -38,7 +38,7 @@ export default function MethodologySection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {group.keys.map(([key, label]) => (
                 <div key={key} className="bg-gray-900/60 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <span className="font-mono text-xs text-green-400/70 flex-shrink-0">{key}</span>
+                  <span className="font-mono text-xs text-ob-red-light flex-shrink-0">{key}</span>
                   <span className="text-gray-400 text-xs">{label}</span>
                 </div>
               ))}

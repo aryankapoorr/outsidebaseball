@@ -2,7 +2,7 @@ import { SITE } from '../../data/site';
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-navy-950 border-t border-navy-600 py-8">
+    <footer className="bg-navy-950 border-t border-ob-red/30 py-8">
       <div className="container max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-xs text-steel-500">© 2026 {SITE.name}</p>
         <a

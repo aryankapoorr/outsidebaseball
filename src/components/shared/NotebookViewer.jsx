@@ -46,7 +46,7 @@ const md = {
     return isBlock ? (
       <code className="text-gray-300 text-xs font-mono">{children}</code>
     ) : (
-      <code className="bg-gray-800 text-green-400 text-xs px-1.5 py-0.5 rounded font-mono">
+      <code className="bg-gray-800 text-ob-red-light text-xs px-1.5 py-0.5 rounded font-mono">
         {children}
       </code>
     );
@@ -204,7 +204,7 @@ function FloatingNav({ sections }) {
               }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
-                active ? 'bg-cyan-400' : 'bg-gray-700'
+                active ? 'bg-ob-red' : 'bg-gray-700'
               }`} />
               <span className="truncate">{s.title}</span>
             </button>
@@ -227,7 +227,7 @@ function FloatingNav({ sections }) {
                     active ? 'text-white bg-navy-700' : 'text-gray-400 hover:text-white hover:bg-navy-700/50'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? 'bg-cyan-400' : 'bg-gray-600'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? 'bg-ob-red' : 'bg-gray-600'}`} />
                   {s.title}
                 </button>
               );

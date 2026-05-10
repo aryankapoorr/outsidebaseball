@@ -31,7 +31,9 @@ export default {
           400: '#7aaad4',
         },
         ob: {
-          red: '#c8102e',
+          red:          '#c8102e',
+          'red-hover':  '#a50d25',
+          'red-light':  '#e03555',
         },
       },
     },
