@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-navy-900 flex flex-col">
       <SiteHeader />
-      <main className="flex-1 pb-16">
+      <main className="flex-1 pb-4">
         <div id="hero">
           <HeroSection />
         </div>

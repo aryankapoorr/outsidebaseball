@@ -11,7 +11,7 @@ export default function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-navy-900/95 backdrop-blur border-b border-navy-600">
+      <header className="sticky top-0 z-40 bg-navy-900/95 backdrop-blur border-b border-ob-red/30">
         <div className="container max-w-6xl flex items-center justify-between h-14">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
             <img
