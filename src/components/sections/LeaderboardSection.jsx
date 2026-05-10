@@ -10,6 +10,15 @@ export default function LeaderboardSection({ playerMap, activeSeason, navSlot })
   const { scoreColumn, pitchCountColumn } = dataSource;
   const { leaderboardPageSize: pageSize } = vizConfig;
 
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  const effectivePageSize = isMobile ? 20 : pageSize;
+
   const [search,     setSearch]     = useState('');
   const [page,       setPage]       = useState(0);
   const [sortAsc,    setSortAsc]    = useState(false);
@@ -17,6 +26,7 @@ export default function LeaderboardSection({ playerMap, activeSeason, navSlot })
   const [selected,   setSelected]   = useState(null);
 
   useEffect(() => { setMinPitches(0); setPage(0); }, [activeSeason]);
+  useEffect(() => { setPage(0); }, [effectivePageSize]);
 
   const allPlayers = useMemo(() => {
     const rows = [];
@@ -50,8 +60,8 @@ export default function LeaderboardSection({ playerMap, activeSeason, navSlot })
     return allPlayers.filter(({ csvName }) => formatPlayerName(csvName).toLowerCase().includes(q));
   }, [allPlayers, search]);
 
-  const pageCount = Math.ceil(filtered.length / pageSize);
-  const pageItems = filtered.slice(page * pageSize, (page + 1) * pageSize);
+  const pageCount = Math.ceil(filtered.length / effectivePageSize);
+  const pageItems = filtered.slice(page * effectivePageSize, (page + 1) * effectivePageSize);
 
   const resetPage        = () => setPage(0);
   const handleSearch     = (e) => { setSearch(e.target.value); resetPage(); };
@@ -101,7 +111,7 @@ export default function LeaderboardSection({ playerMap, activeSeason, navSlot })
               key={csvName}
               csvName={csvName}
               score={score}
-              rank={page * pageSize + i + 1}
+              rank={page * effectivePageSize + i + 1}
               onClick={() => setSelected({ csvName, entry })}
             />
           ))}
@@ -112,7 +122,7 @@ export default function LeaderboardSection({ playerMap, activeSeason, navSlot })
         <span>
           {filtered.length === 0
             ? 'No results'
-            : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+            : `${page * effectivePageSize + 1}–${Math.min((page + 1) * effectivePageSize, filtered.length)} of ${filtered.length}`}
         </span>
         <div className="flex items-center gap-2">
           <button onClick={() => setPage(p => p - 1)} disabled={page === 0} className="px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-600 disabled:opacity-30 hover:text-white hover:border-navy-500 transition-all disabled:cursor-not-allowed">← Prev</button>
