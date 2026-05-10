@@ -205,7 +205,7 @@ function DataStatement({ totalPlayers }) {
       transition={{ delay: 0.8, duration: 0.6 }}
     >
       Context-driven metrics for{' '}
-      <span className="text-white/80 font-medium not-italic">{totalPlayers}+</span>{' '}
+      <span className="text-ob-red-light font-medium not-italic">{totalPlayers}+</span>{' '}
       qualified MLB pitchers
     </motion.p>
   );
@@ -271,7 +271,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-navy-950 to-navy-900 border-b border-navy-600">
+    <section className="relative overflow-hidden bg-gradient-to-b from-navy-950 to-navy-900 border-b border-ob-red/30">
       <div
         className="absolute inset-0 pointer-events-none opacity-35"
         style={{

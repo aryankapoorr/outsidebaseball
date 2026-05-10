@@ -6,7 +6,7 @@ export default function MethodologySection() {
   const { text, statGroups } = useProjectConfig();
 
   return (
-    <div id="methodology-section" className="mt-16 border-t border-navy-600 pt-12">
+    <div id="methodology-section" className="mt-16 border-t border-ob-red/30 pt-12">
       <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">Methodology</p>
       <h2 className="text-2xl font-bold text-white mb-2">{text.methodologyTitle}</h2>
       <p className="text-steel-400 text-sm sm:text-base max-w-2xl mb-8">{text.methodologyBlurb}</p>

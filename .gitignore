@@ -7,3 +7,4 @@ dist
 package-lock.json
 aws
 awscliv2.zip
+.claude

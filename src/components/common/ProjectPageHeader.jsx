@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function ProjectPageHeader({ name, description, slug, notebookPath, showCta = false }) {
   return (
-    <div className="border-b border-navy-600 bg-navy-800/40">
+    <div className="border-b border-ob-red/30 bg-navy-800/40">
       <div className="container max-w-6xl py-8">
         <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">Metric</p>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">

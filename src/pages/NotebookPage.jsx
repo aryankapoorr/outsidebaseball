@@ -10,7 +10,7 @@ export default function NotebookPage({ project }) {
       <div className="min-h-screen bg-navy-900 flex flex-col">
         <SiteHeader />
 
-        <div className="border-b border-navy-600 bg-navy-800/40">
+        <div className="border-b border-ob-red/30 bg-navy-800/40">
           <div className="container max-w-4xl py-8">
             <div className="flex items-center gap-3 mb-4">
               <Link

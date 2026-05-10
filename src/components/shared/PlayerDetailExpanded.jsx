@@ -21,7 +21,7 @@ export default function PlayerDetailExpanded({ csvName, entry }) {
   }));
 
   return (
-    <div className="border-t border-navy-600 bg-navy-800/40">
+    <div className="border-t border-ob-red/30 bg-navy-800/40">
       {/* Player header */}
       <div className="flex items-center gap-4 pl-5 pr-12 pt-4 pb-3">
         <PlayerAvatar csvName={csvName} style={{ width: 48, height: 63 }} />
