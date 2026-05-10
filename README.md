@@ -8,6 +8,8 @@ Each project starts with a question that box scores can't answer, then builds or
 
 Live at **[outsidebaseball.com](https://outsidebaseball.com)**
 
+Metric & notebook repository at **[https://github.com/aryankapoorr/baseball](https://github.com/aryankapoorr/baseball)**
+
 ---
 
 ## Current Metrics
