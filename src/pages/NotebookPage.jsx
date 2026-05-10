@@ -12,12 +12,21 @@ export default function NotebookPage({ project }) {
 
         <div className="border-b border-navy-600 bg-navy-800/40">
           <div className="container max-w-4xl py-8">
-            <Link
-              to={`/${project.slug}`}
-              className="text-xs text-steel-500 hover:text-steel-300 transition-colors mb-4 inline-flex items-center gap-1"
-            >
-              ← Back to {project.name}
-            </Link>
+            <div className="flex items-center gap-3 mb-4">
+              <Link
+                to="/"
+                className="text-xs text-steel-500 hover:text-steel-300 transition-colors inline-flex items-center gap-1"
+              >
+                ← Home
+              </Link>
+              <span className="text-steel-700 text-xs">/</span>
+              <Link
+                to={`/${project.slug}`}
+                className="text-xs text-steel-500 hover:text-steel-300 transition-colors inline-flex items-center gap-1"
+              >
+                {project.name}
+              </Link>
+            </div>
             <p className="text-xs font-semibold text-steel-500 uppercase tracking-widest mb-2">{project.name}</p>
             <h1 className="text-2xl font-bold text-white">{project.text.notebookFilename}</h1>
           </div>

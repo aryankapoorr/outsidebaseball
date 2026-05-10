@@ -87,6 +87,7 @@ export default function ProjectPage({ project }) {
           name={project.name}
           description={`${project.text.tagline} ${project.text.pageDescription}`}
           slug={project.slug}
+          notebookPath={project.text.notebookPath}
         />
 
         <section className="flex-1 pb-16 pt-6">
